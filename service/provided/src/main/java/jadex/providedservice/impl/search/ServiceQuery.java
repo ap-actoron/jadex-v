@@ -29,8 +29,8 @@ public class ServiceQuery<T>
 	
 	/** Default matching modes set the elements with OR semantics. */
 	public static final Map<String, Boolean> DEFAULT_MATCHINGMODES = SUtil.createHashMap(
-		new String[]{ServiceKeyExtractor.KEY_TYPE_TAGS, ServiceKeyExtractor.KEY_TYPE_GROUPS}, 
-		new Boolean[]{Boolean.FALSE, Boolean.FALSE});
+		new String[]{ServiceKeyExtractor.KEY_TYPE_TAGS, ServiceKeyExtractor.KEY_TYPE_GROUPS, ServiceKeyExtractor.KEY_TYPE_ANNOTATIONS}, 
+		new Boolean[]{Boolean.FALSE, Boolean.FALSE, Boolean.FALSE});
 	
 	//-------- attributes --------
 	
@@ -483,6 +483,14 @@ public class ServiceQuery<T>
 		
 		if(serviceidentifier != null)
 			ret.add(new Tuple3<String, String[], Boolean>(ServiceKeyExtractor.KEY_TYPE_SID, new String[]{serviceidentifier.toString()}, getMatchingMode(ServiceKeyExtractor.KEY_TYPE_SID)));
+		
+		if(serviceAnnotations != null && serviceAnnotations.length > 0)
+		{
+			String[] annotationNames = new String[serviceAnnotations.length];
+			for(int i = 0; i < serviceAnnotations.length; i++)
+				annotationNames[i] = serviceAnnotations[i].getName();
+			ret.add(new Tuple3<String, String[], Boolean>(ServiceKeyExtractor.KEY_TYPE_ANNOTATIONS, annotationNames, getMatchingMode(ServiceKeyExtractor.KEY_TYPE_ANNOTATIONS)));
+		}
 		
 		assert !Arrays.equals(groupnames, GROUPS_NOT_SET) : "Problem: query not enhanced before processing.";
 	

@@ -1,8 +1,10 @@
 package jadex.providedservice.impl.service;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +55,9 @@ public class ServiceIdentifier implements IServiceIdentifier
 	
 	/** The tags. */
 	protected Collection<String> tags;
+	
+	/** The annotation type names present on the service interface and its methods. */
+	protected Set<String> annotationtypenames;
 	
 	//-------- constructors --------
 	
@@ -133,8 +138,10 @@ public class ServiceIdentifier implements IServiceIdentifier
 		
 		//System.out.println("Groups for service "+servicename+" "+getGroups(roles));
 		
-		return new ServiceIdentifier(provider, servicetype, servicename!=null? servicename: generateServiceName(servicetype), scope, getGroups(roles),
+		ServiceIdentifier sid = new ServiceIdentifier(provider, servicetype, servicename!=null? servicename: generateServiceName(servicetype), scope, getGroups(roles),
 			roles!=null && roles.contains(Security.UNRESTRICTED), tags);
+		sid.annotationtypenames = collectAnnotationTypeNames(servicetype);
+		return sid;
 	}
 	
 	protected static Set<String> getGroups(Set<String> roles)
@@ -172,7 +179,31 @@ public class ServiceIdentifier implements IServiceIdentifier
 	public static ServiceIdentifier	createServiceIdentifier(ComponentIdentifier providerid, Class<?> type, ClassInfo[] supertypes, 
 		String servicename, ServiceScope scope, Set<String> networknames, boolean unrestricted, Collection<String> tags)
 	{
-		return new ServiceIdentifier(providerid, new ClassInfo(type), supertypes, servicename, scope, networknames, unrestricted, tags);
+		ServiceIdentifier sid = new ServiceIdentifier(providerid, new ClassInfo(type), supertypes, servicename, scope, networknames, unrestricted, tags);
+		sid.annotationtypenames = collectAnnotationTypeNames(type);
+		return sid;
+	}
+	
+	/**
+	 *  Collect annotation type names present on the given class (type-level and method-level).
+	 *  Uses {@link Class#getMethods()} to include inherited public methods, matching the
+	 *  behaviour of the previous reflection-based annotation check in ServiceRegistry.
+	 *  @param type The class to inspect.
+	 *  @return The set of fully-qualified annotation class names, never null.
+	 */
+	public static Set<String> collectAnnotationTypeNames(Class<?> type)
+	{
+		Set<String> names = new HashSet<>();
+		if(type == null)
+			return names;
+		for(Annotation ann : type.getAnnotations())
+			names.add(ann.annotationType().getName());
+		for(Method method : type.getMethods())
+		{
+			for(Annotation ann : method.getAnnotations())
+				names.add(ann.annotationType().getName());
+		}
+		return names;
 	}
 	
 	/** The id counter. */
@@ -346,6 +377,25 @@ public class ServiceIdentifier implements IServiceIdentifier
 	public void setTags(Set<String> tags)
 	{
 		this.tags = tags;
+	}
+	
+	/**
+	 *  Get the annotation type names present on the service interface and its methods.
+	 *  @return The annotation type names, never null.
+	 */
+	@Override
+	public Set<String> getAnnotationTypeNames()
+	{
+		return annotationtypenames != null ? annotationtypenames : Collections.emptySet();
+	}
+	
+	/**
+	 *  Set the annotation type names.
+	 *  @param annotationtypenames The annotation type names to set.
+	 */
+	public void setAnnotationTypeNames(Set<String> annotationtypenames)
+	{
+		this.annotationtypenames = annotationtypenames;
 	}
 	
 //	/**

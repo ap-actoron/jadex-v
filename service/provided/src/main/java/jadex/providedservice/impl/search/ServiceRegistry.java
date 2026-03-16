@@ -1,7 +1,5 @@
 package jadex.providedservice.impl.search;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -780,47 +778,8 @@ public class ServiceRegistry implements IServiceRegistry // extends AbstractServ
 	{
 		return !(query.isExcludeOwner() && query.getOwner().equals(ser.getProviderId())) 
 			&& checkSearchScope(query, ser)
-			&& checkPublicationScope(query, ser)
-			&& checkAnnotations(query, ser);
+			&& checkPublicationScope(query, ser);
 			//&& checkLifecycleVisibility(query, ser);
-	}
-	
-	/**
-	 *  Check if the service interface or any of its methods carries any of the annotations
-	 *  specified in the query.  Returns true if no annotations are specified in the query.
-	 *  A service matches when it has at least one of the required annotations (OR semantics).
-	 *  
-	 *  @param query The query.
-	 *  @param ser The service.
-	 *  @return True, if the service passes the annotation check.
-	 */
-	@SuppressWarnings("unchecked")
-	protected boolean checkAnnotations(ServiceQuery<?> query, IServiceIdentifier ser)
-	{
-		Class<? extends Annotation>[] annotations = query.getServiceAnnotations();
-		if(annotations == null || annotations.length == 0)
-			return true;
-		
-		Class<?> serviceClass = ser.getServiceType().getType0();
-		if(serviceClass == null)
-			serviceClass = ser.getServiceType().getType(Thread.currentThread().getContextClassLoader());
-		if(serviceClass == null)
-			return false;
-		
-		Method[] methods = serviceClass.getMethods();
-		for(Class<? extends Annotation> annotation : annotations)
-		{
-			if(serviceClass.isAnnotationPresent(annotation))
-				return true;
-			
-			for(Method method : methods)
-			{
-				if(method.isAnnotationPresent(annotation))
-					return true;
-			}
-		}
-		
-		return false;
 	}
 	
 	/**

@@ -58,7 +58,7 @@ public class QueryInfoExtractor implements IKeyExtractor<ServiceQueryInfo<?>>
 	public static final String[] QUERY_KEY_TYPES;
 	
 	/** The indexable types. */
-	public static final String[] QUERY_KEY_TYPES_INDEXABLE = {KEY_TYPE_INTERFACE, KEY_TYPE_TAGS, KEY_TYPE_OWNER, /*KEY_TYPE_PROVIDER,*/ KEY_TYPE_PLATFORM, KEY_TYPE_OWNER_PLATORM, KEY_TYPE_ID, KEY_TYPE_SID, KEY_TYPE_NETWORKS, KEY_TYPE_UNRESTRICTED};//, KEY_TYPE_ISREMOTE};
+	public static final String[] QUERY_KEY_TYPES_INDEXABLE = {KEY_TYPE_INTERFACE, KEY_TYPE_TAGS, KEY_TYPE_OWNER, /*KEY_TYPE_PROVIDER,*/ KEY_TYPE_PLATFORM, KEY_TYPE_OWNER_PLATORM, KEY_TYPE_ID, KEY_TYPE_SID, KEY_TYPE_NETWORKS, KEY_TYPE_UNRESTRICTED, ServiceKeyExtractor.KEY_TYPE_ANNOTATIONS};//, KEY_TYPE_ISREMOTE};
 	
 	static
 	{
@@ -168,6 +168,16 @@ public class QueryInfoExtractor implements IKeyExtractor<ServiceQueryInfo<?>>
 		{
 			ret = new SetWrapper<>(query.getId());
 		}
+		else if (ServiceKeyExtractor.KEY_TYPE_ANNOTATIONS.equals(keytype))
+		{
+			Class<? extends java.lang.annotation.Annotation>[] anns = query.getServiceAnnotations();
+			if(anns != null && anns.length > 0)
+			{
+				ret = new HashSet<String>();
+				for(Class<? extends java.lang.annotation.Annotation> ann : anns)
+					ret.add(ann.getName());
+			}
+		}
 		
 		return ret;
 	}
@@ -220,6 +230,10 @@ public class QueryInfoExtractor implements IKeyExtractor<ServiceQueryInfo<?>>
 			ret.add(new Tuple2<>(KEY_TYPE_TAGS, sid.getTags().toArray(new String[sid.getTags().size()])));
 		
 		ret.add(new Tuple2<>(KEY_TYPE_SID, new String[]{sid.toString()}));
+		
+		Set<String> annotationNames = sid.getAnnotationTypeNames();
+		if(!annotationNames.isEmpty())
+			ret.add(new Tuple2<>(ServiceKeyExtractor.KEY_TYPE_ANNOTATIONS, annotationNames.toArray(new String[annotationNames.size()])));
 		
 		//if(sid.getNetworkNames() != null)
 		//	ret.add(new Tuple2<>(KEY_TYPE_NETWORKS, sid.getNetworkNames().toArray(new String[sid.getNetworkNames().size()])));

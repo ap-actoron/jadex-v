@@ -37,6 +37,9 @@ public class ServiceKeyExtractor implements IKeyExtractor<IServiceIdentifier>
 	
 	/** Key type for the unrestricted mode. */
 	public static final String KEY_TYPE_UNRESTRICTED = "unrestricted";
+	
+	/** Key type for the service annotation type names. */
+	public static final String KEY_TYPE_ANNOTATIONS = "annotations";
 
 	
 	/** The key types. */
@@ -152,6 +155,11 @@ public class ServiceKeyExtractor implements IKeyExtractor<IServiceIdentifier>
 		else if(KEY_TYPE_UNRESTRICTED.equals(keytype))
 		{
 			ret = new SetWrapper<String>(""+serv.isUnrestricted());
+		}
+		else if(KEY_TYPE_ANNOTATIONS.equals(keytype))
+		{
+			Set<String> annotationNames = serv.getAnnotationTypeNames();
+			ret = !annotationNames.isEmpty() ? new HashSet<>(annotationNames) : null;
 		}
 		return ret;
 	}
