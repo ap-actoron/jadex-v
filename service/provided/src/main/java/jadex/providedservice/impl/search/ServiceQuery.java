@@ -1,5 +1,6 @@
 package jadex.providedservice.impl.search;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -76,6 +77,9 @@ public class ServiceQuery<T>
 	
 	/** The matching mode for multivalued terms. True is and and false is or. */
 	protected Map<String, Boolean> matchingmodes;
+	
+	/** The annotation types to match on the service interface or its methods (OR semantics). */
+	protected Class<? extends Annotation>[] serviceAnnotations;
 	
 	//-------- identification of a query --------
 	
@@ -157,6 +161,7 @@ public class ServiceQuery<T>
 		//this.platform	= original.platform;
 		//this.searchstart	= original.searchstart;
 		this.unrestricted = original.unrestricted;
+		this.serviceAnnotations = original.serviceAnnotations;
 	}
 
 	/**
@@ -531,6 +536,31 @@ public class ServiceQuery<T>
 	}
 
 	/**
+	 *  Gets the annotation types to match on the service interface or its methods.
+	 *  A service matches if it has any of the given annotations (OR semantics).
+	 *  
+	 *  @return The annotation types, or null if not set.
+	 */
+	public Class<? extends Annotation>[] getServiceAnnotations()
+	{
+		return serviceAnnotations;
+	}
+
+	/**
+	 *  Sets the annotation types to match on the service interface or its methods.
+	 *  A service matches if it has any of the given annotations (OR semantics).
+	 *  
+	 *  @param serviceAnnotations The annotation types to search for.
+	 *  @return This query (for chaining).
+	 */
+	@SuppressWarnings("unchecked")
+	public ServiceQuery<T> setServiceAnnotations(Class<? extends Annotation>... serviceAnnotations)
+	{
+		this.serviceAnnotations = serviceAnnotations;
+		return this;
+	}
+
+	/**
 	 *  Tests if the query keys matches a service.
 	 *  
 	 *  @param service The service.
@@ -730,6 +760,13 @@ public class ServiceQuery<T>
 			ret.append(ret.length()==13?"":", ");
 			ret.append("owner=");
 			ret.append(owner);
+		}
+
+		if(serviceAnnotations!=null)
+		{
+			ret.append(ret.length()==13?"":", ");
+			ret.append("serviceAnnotations=");
+			ret.append(Arrays.toString(serviceAnnotations));
 		}
 			
 		ret.append(")");
